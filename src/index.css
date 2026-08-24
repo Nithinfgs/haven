@@ -1,0 +1,287 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* Haven (Default Light Theme) */
+  --bg: #F8F7F4;
+  --surface: #FFFFFF;
+  --surface-secondary: #F1F0EC;
+  --text-primary: #24262D;
+  --text-secondary: #6C7078;
+  --text-muted: #8A8F89;
+  --border: #E3E1DC;
+  --primary: #4656A8;
+  --primary-dark: #2D3975;
+  --primary-soft: #E8EBF8;
+  --community: #43827C;
+  --community-soft: #E2F0ED;
+  --resource: #B07B37;
+  --resource-soft: #F7EEDC;
+  --danger: #AE5A60;
+  --danger-soft: #F8E7E8;
+}
+
+/* ── Light Palettes (Faint, Soft Tints) ── */
+[data-palette="ocean"] {
+  --bg: #F4F8FA;
+  --surface: #FFFFFF;
+  --surface-secondary: #EAF1F5;
+  --text-primary: #1E2933;
+  --text-secondary: #64717C;
+  --text-muted: #8A8F89;
+  --border: #DCE6EB;
+  --primary: #3478A6;
+  --primary-dark: #245879;
+  --primary-soft: #E1EFF7;
+  --community: #397E88;
+  --community-soft: #E0F0F1;
+  --resource: #8B7355;
+  --resource-soft: #F2EDE5;
+  --danger: #B45D64;
+  --danger-soft: #F8E7E8;
+}
+
+[data-palette="forest"] {
+  --bg: #F6F8F4;
+  --surface: #FFFFFF;
+  --surface-secondary: #EDF1E9;
+  --text-primary: #222A24;
+  --text-secondary: #68736B;
+  --text-muted: #8A8F89;
+  --border: #DDE4DA;
+  --primary: #4D7460;
+  --primary-dark: #304D3D;
+  --primary-soft: #E3EEE7;
+  --community: #66835A;
+  --community-soft: #EAF0E5;
+  --resource: #A8844B;
+  --resource-soft: #F5EEDD;
+  --danger: #AD6262;
+  --danger-soft: #F8E7E8;
+}
+
+[data-palette="lavender"] {
+  --bg: #F8F7FA;
+  --surface: #FFFFFF;
+  --surface-secondary: #F0EDF5;
+  --text-primary: #292631;
+  --text-secondary: #716C7A;
+  --text-muted: #8A8F89;
+  --border: #E4E0E9;
+  --primary: #7663A8;
+  --primary-dark: #514276;
+  --primary-soft: #ECE8F6;
+  --community: #5C8A84;
+  --community-soft: #E3F0ED;
+  --resource: #B48655;
+  --resource-soft: #F6EDDF;
+  --danger: #AE626E;
+  --danger-soft: #F8E7E8;
+}
+
+[data-palette="sunset"] {
+  --bg: #FAF7F3;
+  --surface: #FFFFFF;
+  --surface-secondary: #F5EEE7;
+  --text-primary: #2C2927;
+  --text-secondary: #746C67;
+  --text-muted: #8A8F89;
+  --border: #E9DFD6;
+  --primary: #A65E4B;
+  --primary-dark: #773E31;
+  --primary-soft: #F5E5E0;
+  --community: #5E8479;
+  --community-soft: #E5F0EC;
+  --resource: #B9853F;
+  --resource-soft: #F8EEDB;
+  --danger: #B6535D;
+  --danger-soft: #F8E7E8;
+}
+
+[data-palette="monochrome"] {
+  --bg: #F7F7F6;
+  --surface: #FFFFFF;
+  --surface-secondary: #EFEFEE;
+  --text-primary: #202124;
+  --text-secondary: #6E7075;
+  --text-muted: #8A8F89;
+  --border: #E2E2E0;
+  --primary: #3E4148;
+  --primary-dark: #202124;
+  --primary-soft: #E8E8E7;
+  --community: #62666B;
+  --community-soft: #ECECEA;
+  --resource: #77746F;
+  --resource-soft: #F0EFEF;
+  --danger: #8C5558;
+  --danger-soft: #F8E7E8;
+}
+
+/* ── Dark Mode Palettes (Subtle, Faint Tints & Serene Muted Tones) ── */
+
+/* 1. Haven (Subtle Midnight Indigo) */
+[data-theme="dark"],
+[data-theme="dark"][data-palette="haven"] {
+  --bg: #111216;
+  --surface: #191A20;
+  --surface-secondary: #21232B;
+  --text-primary: #EAEBED;
+  --text-secondary: #9094A0;
+  --text-muted: #626673;
+  --border: #282A34;
+  --primary: #7585C4;
+  --primary-dark: #5C6CA6;
+  --primary-soft: rgba(117, 133, 196, 0.12);
+  --community: #4F9992;
+  --community-soft: rgba(79, 153, 146, 0.12);
+  --resource: #B88F58;
+  --resource-soft: rgba(184, 143, 88, 0.12);
+  --danger: #B8656B;
+  --danger-soft: rgba(184, 101, 107, 0.12);
+}
+
+/* 2. Ocean (Faint Oceanic Mist Dark) */
+[data-theme="dark"][data-palette="ocean"] {
+  --bg: #101317;
+  --surface: #171C21;
+  --surface-secondary: #1F252C;
+  --text-primary: #E9ECEF;
+  --text-secondary: #8E98A3;
+  --text-muted: #606A75;
+  --border: #262E37;
+  --primary: #5A95B8;
+  --primary-dark: #457896;
+  --primary-soft: rgba(90, 149, 184, 0.12);
+  --community: #4F949E;
+  --community-soft: rgba(79, 148, 158, 0.12);
+  --resource: #B4966B;
+  --resource-soft: rgba(180, 150, 107, 0.12);
+  --danger: #BA666D;
+  --danger-soft: rgba(186, 102, 109, 0.12);
+}
+
+/* 3. Forest (Faint Sage Pine Dark) */
+[data-theme="dark"][data-palette="forest"] {
+  --bg: #111412;
+  --surface: #181C19;
+  --surface-secondary: #202621;
+  --text-primary: #E9EBEA;
+  --text-secondary: #8F9992;
+  --text-muted: #616B64;
+  --border: #272E29;
+  --primary: #65917A;
+  --primary-dark: #4E7360;
+  --primary-soft: rgba(101, 145, 122, 0.12);
+  --community: #709462;
+  --community-soft: rgba(112, 148, 98, 0.12);
+  --resource: #B59B67;
+  --resource-soft: rgba(181, 155, 103, 0.12);
+  --danger: #B86767;
+  --danger-soft: rgba(184, 103, 103, 0.12);
+}
+
+/* 4. Lavender (Faint Dusky Lilac Dark) */
+[data-theme="dark"][data-palette="lavender"] {
+  --bg: #131117;
+  --surface: #1B1822;
+  --surface-secondary: #24202D;
+  --text-primary: #EBE9EE;
+  --text-secondary: #9690A0;
+  --text-muted: #686273;
+  --border: #2C2738;
+  --primary: #8E7DBA;
+  --primary-dark: #716099;
+  --primary-soft: rgba(142, 125, 186, 0.12);
+  --community: #649992;
+  --community-soft: rgba(100, 153, 146, 0.12);
+  --resource: #B8966E;
+  --resource-soft: rgba(184, 150, 110, 0.12);
+  --danger: #B86975;
+  --danger-soft: rgba(184, 105, 117, 0.12);
+}
+
+/* 5. Sunset (Faint Warm Terracotta Dark) */
+[data-theme="dark"][data-palette="sunset"] {
+  --bg: #141210;
+  --surface: #1D1A17;
+  --surface-secondary: #27231F;
+  --text-primary: #EFECEA;
+  --text-secondary: #9B948E;
+  --text-muted: #6D6660;
+  --border: #302A24;
+  --primary: #B57766;
+  --primary-dark: #965A4B;
+  --primary-soft: rgba(181, 119, 102, 0.12);
+  --community: #699488;
+  --community-soft: rgba(105, 148, 136, 0.12);
+  --resource: #BA9459;
+  --resource-soft: rgba(186, 148, 89, 0.12);
+  --danger: #B8626A;
+  --danger-soft: rgba(184, 98, 106, 0.12);
+}
+
+/* 6. Monochrome (Clean Muted Charcoal Dark) */
+[data-theme="dark"][data-palette="monochrome"] {
+  --bg: #121212;
+  --surface: #1A1A1A;
+  --surface-secondary: #222222;
+  --text-primary: #EBEBEB;
+  --text-secondary: #919191;
+  --text-muted: #636363;
+  --border: #2B2B2B;
+  --primary: #8E9299;
+  --primary-dark: #6C7077;
+  --primary-soft: rgba(142, 146, 153, 0.12);
+  --community: #767B80;
+  --community-soft: rgba(118, 123, 128, 0.12);
+  --resource: #8A8884;
+  --resource-soft: rgba(138, 136, 132, 0.12);
+  --danger: #9E6467;
+  --danger-soft: rgba(158, 100, 103, 0.12);
+}
+
+@theme {
+  --color-bg-app: var(--bg);
+  --color-surface-main: var(--surface);
+  --color-surface-sec: var(--surface-secondary);
+  --color-border-primary: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-brand-primary: var(--primary);
+  --color-brand-hover: var(--primary-dark);
+  --color-brand-light: var(--primary-soft);
+  
+  --color-accent-teal: var(--community);
+  --color-accent-teal-light: var(--community-soft);
+  
+  --color-accent-amber: var(--resource);
+  --color-accent-amber-light: var(--resource-soft);
+  
+  --color-accent-rose: var(--danger);
+  --color-accent-rose-light: var(--danger-soft);
+
+  --font-sans: "Plus Jakarta Sans", "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-app text-text-primary font-sans antialiased transition-colors duration-200 selection:bg-brand-light selection:text-brand-primary;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
