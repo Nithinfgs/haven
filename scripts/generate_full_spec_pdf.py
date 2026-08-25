@@ -42,7 +42,7 @@ class NumberedCanvas(canvas.Canvas):
         # Footer
         footer_text = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(letter[0] - 45, 25, footer_text)
-        self.drawString(45, 25, "CONFIDENTIAL — HAVEN (Nithin Selvaraj & Arunachalam Premkumar)")
+        self.drawString(45, 25, "CONFIDENTIAL — HAVEN (Sole Owner: Nithin Selvaraj)")
         self.setStrokeColor(colors.HexColor("#E2E8F0"))
         self.setLineWidth(0.5)
         self.line(45, 34, letter[0] - 45, 34)
@@ -148,13 +148,13 @@ story.append(Spacer(1, 6))
 story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#4338CA'), spaceAfter=8))
 
 # ==================== 1. EXECUTIVE SUMMARY & ATTRIBUTION ====================
-story.append(Paragraph("1. EXECUTIVE SUMMARY & FOUNDING ATTRIBUTION", h1_style))
+story.append(Paragraph("1. EXECUTIVE SUMMARY & FOUNDING OWNERSHIP", h1_style))
 exec_summary = """
 <b>Haven</b> is a full-stack digital mental health, emotional self-awareness, peer support, and telehealth consultation platform purpose-built for adolescents and young adults. Designed with strict zero-emoji, high-contrast typography, whisper-level dark mode atmospheres, and local-first data sovereignty, Haven bridges the gap between everyday stress management and professional clinical telehealth counseling.
 <br/><br/>
-<b>Founding Attribution & Leadership:</b><br/>
-&bull; <b>Arunachalam Premkumar:</b> <i>Co-Founder, Initial Concept Ideator & Strategic Partner (37% Allocation)</i><br/>
-&bull; <b>Nithin Selvaraj:</b> <i>Co-Founder, Lead Architect & Lead Developer (63% Allocation)</i>
+<b>Founding Ownership & Engineering:</b><br/>
+&bull; <b>Nithin Selvaraj:</b> <i>Sole Founder, Product Architect & Lead Engineer (100% Sole Ownership)</i><br/>
+&bull; <b>Effective Date:</b> <i>August 25, 2026</i>
 """
 story.append(Paragraph(exec_summary, body_style))
 story.append(Spacer(1, 6))
@@ -284,13 +284,13 @@ story.append(Paragraph(sec_text, body_style))
 story.append(Spacer(1, 8))
 
 # ==================== 5. CORPORATE & GOVERNANCE SUMMARY ====================
-story.append(Paragraph("5. CO-FOUNDER PARTNERSHIP & LEGAL GOVERNANCE", h1_style))
+story.append(Paragraph("5. SOLE PROPRIETORSHIP & INTELLECTUAL PROPERTY GOVERNANCE", h1_style))
 gov_text = """
 The platform is governed under the <b>Indian Contract Act, 1872</b>, <b>Indian Copyright Act, 1957 (Section 19)</b>, and <b>Information Technology Act, 2000</b>:
 <br/><br/>
-&bull; <b>Equity & Revenue Split:</b> <b>63.00%</b> to <b>Nithin Selvaraj</b> | <b>37.00%</b> to <b>Arunachalam Premkumar</b>.<br/>
-&bull; <b>Intellectual Property Assignment:</b> All software code, repositories, UI/UX designs, trademarks, and registered domains (<code>havenwellbeing.in</code>) are assigned irrevocably to the partnership in perpetuity.<br/>
-&bull; <b>Governance:</b> Technical & operational authority led by Nithin Selvaraj (63% majority interest); fundamental corporate milestones (sale, major debt) require joint written consensus.
+&bull; <b>Equity & Revenue Ownership:</b> <b>100.00%</b> owned and controlled solely by <b>Nithin Selvaraj</b> as of <b>August 25, 2026</b>.<br/>
+&bull; <b>Intellectual Property Assignment:</b> All software code, repositories, UI/UX designs, trademarks, concept frameworks, algorithms, and registered domains (<code>havenwellbeing.in</code>) and any byproducts are exclusively and irrevocably owned by Nithin Selvaraj in perpetuity.<br/>
+&bull; <b>Governance:</b> All technical, commercial, financial, and strategic operational authority is held exclusively by Nithin Selvaraj.
 """
 story.append(Paragraph(gov_text, body_style))
 

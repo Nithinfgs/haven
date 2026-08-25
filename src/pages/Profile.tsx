@@ -638,9 +638,9 @@ export const Profile: React.FC = () => {
 
           {legalTab === 'copyright' && (
             <div className="space-y-2">
-              <p><strong>Product Architecture & Engineering:</strong> Nithin Selvaraj (63% Allocation)</p>
-              <p><strong>Initial Concept & Strategic Direction:</strong> Arunachalam Premkumar (37% Allocation)</p>
-              <p>All rights reserved under the Indian Copyright Act, 1957 (Section 19).</p>
+              <p><strong>Sole Founder, Product Architect & Lead Engineer:</strong> Nithin Selvaraj (100% Sole Ownership)</p>
+              <p><strong>Effective Date:</strong> August 25, 2026</p>
+              <p>All concepts, system architecture, source code, brand assets, and derivative products of Haven are exclusively and solely owned by Nithin Selvaraj under the Indian Copyright Act, 1957 (Section 19) and global intellectual property laws.</p>
             </div>
           )}
 
