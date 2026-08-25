@@ -1,26 +1,91 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Eye, EyeOff, ArrowRight, Shield, Lock, ShieldCheck, User, ArrowUpRight, KeyRound, Sparkles } from 'lucide-react';
+import { 
+  Mail, 
+  Eye, 
+  EyeOff, 
+  ArrowRight, 
+  Shield, 
+  Lock, 
+  ShieldCheck, 
+  User, 
+  ArrowUpRight, 
+  KeyRound, 
+  Sparkles,
+  Globe,
+  Sun,
+  Moon
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { HavenLogo } from '../components/HavenLogo';
+import { useLanguage } from '../context/LanguageContext';
+import { LANGUAGES, type SupportedLanguage } from '../i18n';
+import { getMockDatabase } from '../mockData';
+import { Modal } from '../components/Modal';
+import type { UserProfile } from '../types';
+
+const PALETTES = [
+  { id: 'haven', name: 'Haven', swatch: '#4656A8' },
+  { id: 'ocean', name: 'Ocean', swatch: '#3478A6' },
+  { id: 'forest', name: 'Forest', swatch: '#4D7460' },
+  { id: 'lavender', name: 'Lavender', swatch: '#7663A8' },
+  { id: 'sunset', name: 'Sunset', swatch: '#A65E4B' },
+  { id: 'monochrome', name: 'Monochrome', swatch: '#3E4148' }
+];
 
 interface LoginPageProps {
   onAuthenticated: (role?: 'user' | 'therapist' | 'admin') => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
+  const db = getMockDatabase();
+  const { language: currentGlobalLang, setLanguage: setGlobalLanguage } = useLanguage();
+  const currentProfile = db.getUserProfile();
+
   const [tab, setTab] = useState<'student' | 'provider'>('student');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   
   // Form fields
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [accessCode, setAccessCode] = useState('HAVEN-2026');
   const [showPassword, setShowPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   
+  // Customization fields
+  const [signupLanguage, setSignupLanguage] = useState<SupportedLanguage>((currentProfile.language as SupportedLanguage) || currentGlobalLang || 'en');
+  const [signupPalette, setSignupPalette] = useState<'haven' | 'ocean' | 'forest' | 'lavender' | 'sunset' | 'monochrome'>(
+    (currentProfile.palette as any) || 'haven'
+  );
+  const [signupTheme, setSignupTheme] = useState<'light' | 'dark' | 'system'>((currentProfile.theme as any) || 'light');
+
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [termsModalOpen, setTermsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleLanguageChange = (code: SupportedLanguage) => {
+    setSignupLanguage(code);
+    setGlobalLanguage(code);
+    const updated = { ...db.getUserProfile(), language: code };
+    db.setUserProfile(updated);
+  };
+
+  const handlePaletteChange = (pal: 'haven' | 'ocean' | 'forest' | 'lavender' | 'sunset' | 'monochrome') => {
+    setSignupPalette(pal);
+    document.documentElement.dataset.palette = pal;
+    const updated = { ...db.getUserProfile(), palette: pal };
+    db.setUserProfile(updated);
+  };
+
+  const handleThemeToggle = () => {
+    const nextTheme: 'light' | 'dark' = (document.documentElement.dataset.theme === 'dark') ? 'light' : 'dark';
+    setSignupTheme(nextTheme);
+    document.documentElement.dataset.theme = nextTheme;
+    const updated = { ...db.getUserProfile(), theme: nextTheme };
+    db.setUserProfile(updated);
+  };
 
   const handleDevBypass = (selectedRole: 'user' | 'therapist' | 'admin') => {
     localStorage.setItem('haven_auth', selectedRole);
@@ -48,7 +113,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
           handleDevBypass('therapist');
         }
         setLoading(false);
-      }, 400);
+      }, 350);
       return;
     }
 
@@ -68,9 +133,29 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
 
     setLoading(true);
     setTimeout(() => {
+      // Save updated profile on signup
+      const resolvedName = name.trim() || email.split('@')[0] || 'Sam';
+      const updatedUser: UserProfile = {
+        ...currentProfile,
+        name: resolvedName,
+        email: email.trim(),
+        avatar: resolvedName.charAt(0).toUpperCase(),
+        language: signupLanguage,
+        palette: signupPalette,
+        theme: signupTheme,
+        onboarded: true,
+      };
+
+      db.setUserProfile(updatedUser);
+      localStorage.setItem('haven_onboarded', 'true');
+      document.documentElement.dataset.palette = signupPalette;
+      document.documentElement.dataset.theme = signupTheme === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : signupTheme;
+
       handleDevBypass('user');
       setLoading(false);
-    }, 400);
+    }, 350);
   };
 
   const handleGoogleLogin = () => {
@@ -78,30 +163,84 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
     setTimeout(() => {
       handleDevBypass('user');
       setLoading(false);
-    }, 400);
+    }, 350);
   };
 
   return (
-    <div className="min-h-screen bg-bg-app flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-bg-app flex flex-col justify-between px-4 py-8 max-w-lg mx-auto selection:bg-brand-primary/10">
+      
+      {/* Top Controls: Language & Theme Switchers */}
+      <header className="flex items-center justify-between border-b border-border-primary/60 pb-3 mb-4">
+        <Link to="/" className="hover:opacity-90 transition-opacity">
+          <HavenLogo size={26} showText={true} />
+        </Link>
+
+        <div className="flex items-center space-x-2">
+          {/* Language Switcher */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl bg-surface-sec hover:bg-surface-main border border-border-primary text-xs font-bold text-text-secondary hover:text-text-primary transition-all cursor-pointer shadow-2xs"
+            >
+              <Globe size={13} className="text-brand-primary" />
+              <span>{LANGUAGES.find(l => l.code === signupLanguage)?.nativeName || 'English'}</span>
+            </button>
+
+            {langDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-36 bg-surface-main border border-border-primary rounded-2xl shadow-xl p-1.5 z-50 space-y-0.5">
+                {LANGUAGES.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => {
+                      handleLanguageChange(lang.code as any);
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center justify-between ${
+                      signupLanguage === lang.code
+                        ? 'bg-brand-light text-brand-primary'
+                        : 'text-text-secondary hover:bg-surface-sec hover:text-text-primary'
+                    }`}
+                  >
+                    <span>{lang.nativeName}</span>
+                    <span className="text-[9px] text-text-muted font-normal">{lang.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Quick Theme Toggle */}
+          <button
+            type="button"
+            onClick={handleThemeToggle}
+            className="p-2 rounded-xl bg-surface-sec hover:bg-surface-main border border-border-primary text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+            title="Toggle Light / Dark Mode"
+          >
+            <Moon size={14} className="hidden [html[data-theme='light']_&]:block text-text-secondary" />
+            <Sun size={14} className="hidden [html[data-theme='dark']_&]:block text-accent-amber" />
+          </button>
+        </div>
+      </header>
+
+      {/* Main Container */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.15 }}
+        className="w-full my-auto"
       >
         {/* Brand Header */}
         <div className="text-center mb-6">
-          <div className="mb-3">
-            <HavenLogo size={42} showText={true} />
-          </div>
-          <h1 className="text-xl font-extrabold text-text-primary tracking-tight">
+          <h1 className="text-2xl font-extrabold text-text-primary tracking-tight">
             {tab === 'student'
-              ? mode === 'login' ? 'Welcome back' : 'Create your safe space'
+              ? mode === 'login' ? 'Welcome back to Haven' : 'Create your quiet sanctuary'
               : 'Therapist & Administrator Portal'}
           </h1>
-          <p className="text-text-secondary text-xs mt-1 font-semibold">
+          <p className="text-text-secondary text-xs mt-1 font-medium">
             {tab === 'student'
-              ? 'Access your self-awareness tools, support circles, and counseling.'
+              ? 'Access self-awareness tools, support circles, and confidential counseling.'
               : 'Sign in with your clinical access code or administrative credentials.'}
           </p>
         </div>
@@ -136,12 +275,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
         </div>
 
         {/* Main Auth Card */}
-        <div className="bg-surface-main border border-border-primary rounded-3xl p-6 md:p-8 shadow-xs space-y-5">
+        <div className="bg-surface-main border border-border-primary rounded-3xl p-6 md:p-8 shadow-xs space-y-4">
           
           {/* Google Sign-in for Students */}
           {tab === 'student' && (
             <>
               <button
+                type="button"
                 onClick={handleGoogleLogin}
                 disabled={loading}
                 className="w-full h-11 flex items-center justify-center space-x-2.5 border border-border-primary bg-surface-main hover:bg-surface-sec rounded-xl text-xs font-bold text-text-primary transition-all cursor-pointer shadow-2xs"
@@ -203,6 +343,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
               </>
             ) : (
               <>
+                {mode === 'signup' && (
+                  <div className="space-y-1">
+                    <label className="text-[9.5px] font-extrabold text-text-secondary uppercase tracking-wider block">
+                      Your Name or Alias
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Sam, Alex"
+                      value={name}
+                      onChange={e => { setName(e.target.value); setError(null); }}
+                      className="w-full h-10 px-3 bg-surface-sec border border-border-primary rounded-xl text-xs font-semibold text-text-primary focus:outline-none focus:border-brand-primary transition-colors"
+                    />
+                  </div>
+                )}
+
                 <div className="space-y-1">
                   <label className="text-[9.5px] font-extrabold text-text-secondary uppercase tracking-wider block">
                     Student Email
@@ -240,6 +395,32 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
                   </div>
                 </div>
 
+                {/* Atmosphere Selection during Sign Up */}
+                {mode === 'signup' && (
+                  <div className="space-y-2 pt-1 border-t border-border-primary/60">
+                    <span className="text-[9.5px] font-extrabold text-text-secondary uppercase tracking-wider block">
+                      Choose Atmosphere Palette (Updates Live)
+                    </span>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {PALETTES.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => handlePaletteChange(p.id as any)}
+                          className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                            signupPalette === p.id
+                              ? 'bg-brand-light border-brand-primary text-brand-primary shadow-2xs'
+                              : 'bg-surface-sec border-border-primary text-text-secondary hover:bg-surface-main'
+                          }`}
+                        >
+                          <span className="text-[10px] font-bold truncate">{p.name}</span>
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0 border border-black/10" style={{ backgroundColor: p.swatch }} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {mode === 'signup' && (
                   <div className="flex items-start space-x-2.5 pt-1">
                     <input
@@ -250,7 +431,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
                       className="mt-0.5 w-4 h-4 rounded border-border-primary text-brand-primary focus:ring-brand-primary cursor-pointer shrink-0"
                     />
                     <label htmlFor="signupTermsCheck" className="text-[10.5px] text-text-secondary font-semibold leading-relaxed cursor-pointer select-none">
-                      I agree to the Terms of Service & Medical Disclaimers.
+                      I agree to the{' '}
+                      <button
+                        type="button"
+                        onClick={() => setTermsModalOpen(true)}
+                        className="text-brand-primary font-bold hover:underline cursor-pointer"
+                      >
+                        Terms of Service & Medical Disclaimers
+                      </button>
+                      .
                     </label>
                   </div>
                 )}
@@ -267,7 +456,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
               className="w-full h-11 bg-brand-primary hover:bg-brand-hover disabled:opacity-60 text-white text-xs font-bold rounded-xl cursor-pointer flex items-center justify-center space-x-1.5 shadow-xs transition-all"
             >
               {loading ? (
-                <span>Verifying Access…</span>
+                <span>Entering Sanctuary…</span>
               ) : (
                 <>
                   <span>
@@ -352,6 +541,43 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
 
         </div>
       </motion.div>
+
+      {/* Footer */}
+      <footer className="text-center text-xs text-text-muted border-t border-border-primary/60 pt-4 mt-6">
+        <span>© 2026 Haven Platform • Sole Founder: Nithin Selvaraj</span>
+      </footer>
+
+      {/* Terms & Medical Disclaimer Modal */}
+      <Modal
+        isOpen={termsModalOpen}
+        onClose={() => setTermsModalOpen(false)}
+        title="Terms of Service & Medical Disclaimer"
+      >
+        <div className="space-y-4 py-2 text-xs text-text-secondary leading-relaxed">
+          <p>
+            <strong>1. Non-Clinical Educational Sanctuary:</strong> Haven is an adolescent emotional self-awareness, somatic grounding, and peer support tool. It does not replace medical psychiatric care or emergency intervention.
+          </p>
+          <p>
+            <strong>2. Data Sovereignty:</strong> In Local-Only Mode, your reflections and check-ins reside physically on this device.
+          </p>
+          <p>
+            <strong>3. Emergency Helplines:</strong> If you are in immediate crisis, call <strong>988</strong> (US/Canada), <strong>112</strong> (India/EU), or the <strong>Vandrevala Foundation</strong> at <code>+91 9999 666 555</code>.
+          </p>
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setAgreedToTerms(true);
+                setTermsModalOpen(false);
+              }}
+              className="px-5 py-2 bg-brand-primary hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
+            >
+              I Understand & Agree
+            </button>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 };

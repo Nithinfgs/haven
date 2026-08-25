@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 import { getMockDatabase } from '../mockData';
 import { HavenLogo } from '../components/HavenLogo';
-import { LANGUAGES } from '../i18n';
+import { LANGUAGES, type SupportedLanguage } from '../i18n';
+import { useLanguage } from '../context/LanguageContext';
 import type { UserProfile } from '../types';
 
 const GOAL_OPTIONS = [
@@ -38,19 +39,47 @@ interface OnboardingProps {
 export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   const db = getMockDatabase();
   const navigate = useNavigate();
+  const { language: currentGlobalLang, setLanguage: setGlobalLanguage } = useLanguage();
   const currentProfile = db.getUserProfile();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   // Form states
   const [name, setName] = useState(currentProfile.name || '');
-  const [language, setLanguage] = useState(currentProfile.language || 'en');
+  const [language, setLanguageState] = useState<SupportedLanguage>((currentProfile.language as SupportedLanguage) || currentGlobalLang || 'en');
   const [selectedGoals, setSelectedGoals] = useState<string[]>(currentProfile.primaryGoals || ['Managing stress']);
-  const [privacyMode, setPrivacyMode] = useState<'local_only' | 'cloud_sync'>('local_only');
-  const [palette, setPalette] = useState<'haven' | 'ocean' | 'forest' | 'lavender' | 'sunset' | 'monochrome'>('haven');
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('light');
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [quietHours, setQuietHours] = useState(true);
+  const [privacyMode, setPrivacyMode] = useState<'local_only' | 'cloud_sync'>(currentProfile.privacyMode || 'local_only');
+  const [palette, setPaletteState] = useState<'haven' | 'ocean' | 'forest' | 'lavender' | 'sunset' | 'monochrome'>(
+    (currentProfile.palette as any) || 'haven'
+  );
+  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>((currentProfile.theme as any) || 'light');
+  const [reducedMotion, setReducedMotion] = useState(currentProfile.reducedMotion || false);
+  const [quietHours, setQuietHours] = useState(currentProfile.quietHours !== false);
+
+  const handleLanguageSelect = (code: SupportedLanguage) => {
+    setLanguageState(code);
+    setGlobalLanguage(code);
+    const updated = { ...db.getUserProfile(), language: code };
+    db.setUserProfile(updated);
+  };
+
+  const handlePaletteSelect = (pal: 'haven' | 'ocean' | 'forest' | 'lavender' | 'sunset' | 'monochrome') => {
+    setPaletteState(pal);
+    document.documentElement.dataset.palette = pal;
+    const updated = { ...db.getUserProfile(), palette: pal };
+    db.setUserProfile(updated);
+  };
+
+  const handleThemeSelect = (thm: 'light' | 'dark' | 'system') => {
+    setThemeState(thm);
+    let resolved = thm;
+    if (thm === 'system') {
+      resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.dataset.theme = resolved;
+    const updated = { ...db.getUserProfile(), theme: thm };
+    db.setUserProfile(updated);
+  };
 
   const toggleGoal = (id: string) => {
     if (selectedGoals.includes(id)) {
@@ -65,7 +94,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       ...currentProfile,
       name: name.trim() || 'Friend',
       avatar: (name.trim() || 'F').charAt(0).toUpperCase(),
-      language: language as any,
+      language,
       primaryGoals: selectedGoals,
       privacyMode,
       palette,
@@ -88,6 +117,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     db.setUserProfile(updated);
     localStorage.setItem('haven_onboarded', 'true');
     localStorage.setItem('haven_local_only', String(privacyMode === 'local_only'));
+    document.documentElement.dataset.palette = palette;
     document.documentElement.dataset.theme = theme === 'system' 
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme;
@@ -97,12 +127,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-screen bg-bg-app flex flex-col justify-between py-10 px-6 max-w-2xl mx-auto">
+    <div className="min-h-screen bg-bg-app flex flex-col justify-between py-10 px-6 max-w-2xl mx-auto selection:bg-brand-primary/10">
       {/* Top Header */}
       <div className="flex items-center justify-between border-b border-border-primary/60 pb-4">
         <HavenLogo size={26} showText={true} />
-        <div className="flex items-center space-x-2 text-xs font-mono text-text-muted">
-          <span>Step {step} of 4</span>
+        <div className="flex items-center space-x-3 text-xs font-mono text-text-muted">
+          <span className="font-bold text-text-secondary">Step {step} of 4</span>
         </div>
       </div>
 
@@ -125,7 +155,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 <h2 className="text-2xl md:text-3xl font-extrabold text-text-primary tracking-tight">
                   Welcome to Haven. What should we call you?
                 </h2>
-                <p className="text-xs text-text-secondary leading-relaxed">
+                <p className="text-xs text-text-secondary leading-relaxed font-medium">
                   Haven is a private sanctuary. You can use your real name, an alias, or initials.
                 </p>
               </div>
@@ -141,28 +171,31 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     placeholder="e.g. Sam, Alex, Quiet Soul"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-3 bg-surface-sec border border-border-primary rounded-2xl text-sm font-semibold text-text-primary focus:outline-none focus:border-brand-primary"
+                    className="w-full px-4 py-3 bg-surface-sec border border-border-primary rounded-2xl text-sm font-semibold text-text-primary focus:outline-none focus:border-brand-primary transition-colors"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider block">
-                    Preferred Language
+                    Preferred Language (Switches Instantly)
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {LANGUAGES.map((lang) => (
                       <button
                         key={lang.code}
                         type="button"
-                        onClick={() => setLanguage(lang.code as any)}
-                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                        onClick={() => handleLanguageSelect(lang.code as any)}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
                           language === lang.code
                             ? 'bg-brand-primary text-white border-brand-primary shadow-2xs'
                             : 'bg-surface-sec border-border-primary text-text-secondary hover:bg-surface-main'
                         }`}
                       >
-                        <span className="font-bold text-xs block">{lang.nativeName}</span>
-                        <span className="text-[10px] opacity-75">{lang.name}</span>
+                        <div>
+                          <span className="font-bold text-xs block">{lang.nativeName}</span>
+                          <span className="text-[10px] opacity-75">{lang.name}</span>
+                        </div>
+                        {language === lang.code && <Check size={14} className="text-white" />}
                       </button>
                     ))}
                   </div>
@@ -187,7 +220,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 <h2 className="text-2xl md:text-3xl font-extrabold text-text-primary tracking-tight">
                   What would you like Haven to help with?
                 </h2>
-                <p className="text-xs text-text-secondary leading-relaxed">
+                <p className="text-xs text-text-secondary leading-relaxed font-medium">
                   Select what matters right now. This shapes your daily recommendations and quiet doorways.
                 </p>
               </div>
@@ -238,7 +271,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 <h2 className="text-2xl md:text-3xl font-extrabold text-text-primary tracking-tight">
                   Choose how private you want Haven to be.
                 </h2>
-                <p className="text-xs text-text-secondary leading-relaxed">
+                <p className="text-xs text-text-secondary leading-relaxed font-medium">
                   Your emotional reflections are deeply personal. You have complete control over where they live.
                 </p>
               </div>
@@ -305,23 +338,23 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                 <h2 className="text-2xl md:text-3xl font-extrabold text-text-primary tracking-tight">
                   Craft your low-stimulation sanctuary.
                 </h2>
-                <p className="text-xs text-text-secondary leading-relaxed">
-                  Tailor the visual atmosphere and noise level for your comfort.
+                <p className="text-xs text-text-secondary leading-relaxed font-medium">
+                  Tailor the visual atmosphere and noise level for your comfort. Palette updates in real time!
                 </p>
               </div>
 
               {/* Palette Selection */}
               <div className="space-y-2">
                 <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider block">
-                  Color Atmosphere
+                  Color Atmosphere (Select to Preview Live)
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {PALETTES.map((p) => (
                     <button
                       key={p.id}
                       type="button"
-                      onClick={() => setPalette(p.id as any)}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                      onClick={() => handlePaletteSelect(p.id as any)}
+                      className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex items-center justify-between ${
                         palette === p.id
                           ? 'bg-brand-light border-brand-primary shadow-2xs'
                           : 'bg-surface-sec border-border-primary hover:bg-surface-main'
@@ -331,24 +364,24 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                         <span className="font-bold text-xs text-text-primary block">{p.name}</span>
                         <span className="text-[9.5px] text-text-secondary">{p.desc}</span>
                       </div>
-                      <span className="w-3 h-3 rounded-full shrink-0 border border-black/10" style={{ backgroundColor: p.swatch }} />
+                      <span className="w-3.5 h-3.5 rounded-full shrink-0 border border-black/10" style={{ backgroundColor: p.swatch }} />
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Theme & Motion */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div className="p-3 bg-surface-sec rounded-xl border border-border-primary space-y-1">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div className="p-3 bg-surface-sec rounded-2xl border border-border-primary space-y-1.5 sm:col-span-1">
                   <span className="text-[10px] font-bold text-text-secondary uppercase block">Theme Mode</span>
                   <div className="flex gap-1">
-                    {['light', 'system', 'dark'].map((t) => (
+                    {['light', 'dark', 'system'].map((t) => (
                       <button
                         key={t}
                         type="button"
-                        onClick={() => setTheme(t as any)}
-                        className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
-                          theme === t ? 'bg-brand-primary text-white' : 'bg-surface-main text-text-secondary'
+                        onClick={() => handleThemeSelect(t as any)}
+                        className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold capitalize transition-all cursor-pointer ${
+                          theme === t ? 'bg-brand-primary text-white shadow-2xs' : 'bg-surface-main text-text-secondary border border-border-primary'
                         }`}
                       >
                         {t}
@@ -357,7 +390,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   </div>
                 </div>
 
-                <div className="p-3 bg-surface-sec rounded-xl border border-border-primary flex items-center justify-between">
+                <div className="p-3 bg-surface-sec rounded-2xl border border-border-primary flex items-center justify-between">
                   <div>
                     <span className="text-xs font-bold text-text-primary block">Reduced Motion</span>
                     <span className="text-[10px] text-text-secondary">Low-stimulation animations</span>
@@ -370,10 +403,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                   />
                 </div>
 
-                <div className="p-3 bg-surface-sec rounded-xl border border-border-primary flex items-center justify-between">
+                <div className="p-3 bg-surface-sec rounded-2xl border border-border-primary flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-text-primary block">Quiet Hours (9PM - 8AM)</span>
-                    <span className="text-[10px] text-text-secondary">Silence notifications overnight</span>
+                    <span className="text-xs font-bold text-text-primary block">Quiet Hours</span>
+                    <span className="text-[10px] text-text-secondary">9:00 PM – 8:00 AM</span>
                   </div>
                   <input
                     type="checkbox"
