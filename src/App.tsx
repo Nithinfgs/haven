@@ -37,6 +37,15 @@ import { Communities } from './admin/Communities';
 import { Moderation } from './admin/Moderation';
 import { Analytics } from './admin/Analytics';
 import { Settings } from './admin/Settings';
+
+// Therapist Clinical Portal Pages
+import { TherapistLayout } from './therapist/TherapistLayout';
+import { ClinicalDashboard } from './therapist/ClinicalDashboard';
+import { SessionsManager } from './therapist/SessionsManager';
+import { ClinicalNotes } from './therapist/ClinicalNotes';
+import { AvailabilitySettings } from './therapist/AvailabilitySettings';
+import { PractitionerProfile as TherapistCredentials } from './therapist/PractitionerProfile';
+
 import type { NotificationItem, UserProfile } from './types';
 
 function AppContent() {
@@ -102,7 +111,7 @@ function AppContent() {
     if (role === 'admin') {
       window.location.hash = '#/admin';
     } else if (role === 'therapist') {
-      window.location.hash = '#/admin/clinical';
+      window.location.hash = '#/therapist-portal';
     } else {
       window.location.hash = '#/';
     }
@@ -190,6 +199,15 @@ function AppContent() {
           <Route path="/grounding" element={<SomaticGrounding />} />
           <Route path="/soundscape" element={<SoundSanctuary />} />
           <Route path="/hope-board" element={<HopeBoard />} />
+
+          {/* Therapist Clinical Portal Routes */}
+          <Route path="/therapist-portal" element={<TherapistLayout />}>
+            <Route index element={<ClinicalDashboard />} />
+            <Route path="sessions" element={<SessionsManager />} />
+            <Route path="notes" element={<ClinicalNotes />} />
+            <Route path="availability" element={<AvailabilitySettings />} />
+            <Route path="profile" element={<TherapistCredentials />} />
+          </Route>
 
           {/* Admin & Governance Routes */}
           <Route path="/admin" element={<AdminLayout />}>

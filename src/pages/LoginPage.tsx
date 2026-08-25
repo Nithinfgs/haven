@@ -14,7 +14,8 @@ import {
   Sparkles,
   Globe,
   Sun,
-  Moon
+  Moon,
+  Stethoscope
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { HavenLogo } from '../components/HavenLogo';
@@ -42,7 +43,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
   const { language: currentGlobalLang, setLanguage: setGlobalLanguage } = useLanguage();
   const currentProfile = db.getUserProfile();
 
-  const [tab, setTab] = useState<'student' | 'provider'>('student');
+  const [tab, setTab] = useState<'student' | 'therapist' | 'admin'>('student');
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   
   // Form fields
@@ -98,20 +99,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
     e.preventDefault();
     setError(null);
 
-    if (tab === 'provider') {
-      const code = accessCode.trim().toLowerCase();
-      const mail = email.trim().toLowerCase();
-
-      // Check if Admin master credentials
-      const isAdmin = code.includes('admin') || mail.includes('admin') || password.toLowerCase().includes('admin');
-      
+    if (tab === 'admin') {
       setLoading(true);
       setTimeout(() => {
-        if (isAdmin) {
-          handleDevBypass('admin');
-        } else {
-          handleDevBypass('therapist');
-        }
+        handleDevBypass('admin');
+        setLoading(false);
+      }, 350);
+      return;
+    }
+
+    if (tab === 'therapist') {
+      setLoading(true);
+      setTimeout(() => {
+        handleDevBypass('therapist');
         setLoading(false);
       }, 350);
       return;
@@ -133,7 +133,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
 
     setLoading(true);
     setTimeout(() => {
-      // Save updated profile on signup
       const resolvedName = name.trim() || email.split('@')[0] || 'Sam';
       const updatedUser: UserProfile = {
         ...currentProfile,
@@ -231,46 +230,63 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
         transition={{ duration: 0.15 }}
         className="w-full my-auto"
       >
-        {/* Brand Header */}
+        {/* Dynamic Portal Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-extrabold text-text-primary tracking-tight">
             {tab === 'student'
               ? mode === 'login' ? 'Welcome back to Haven' : 'Create your quiet sanctuary'
-              : 'Therapist & Administrator Portal'}
+              : tab === 'therapist'
+              ? 'Clinical Therapist Portal'
+              : 'Executive Governance Console'}
           </h1>
           <p className="text-text-secondary text-xs mt-1 font-medium">
             {tab === 'student'
               ? 'Access self-awareness tools, support circles, and confidential counseling.'
-              : 'Sign in with your clinical access code or administrative credentials.'}
+              : tab === 'therapist'
+              ? 'Manage client telehealth sessions, Google Meet calls, and SOAP clinical progress notes.'
+              : 'Platform oversight, practitioner license verification, and safety moderation.'}
           </p>
         </div>
 
-        {/* 2 Clean Options: Student vs Provider/Admin */}
+        {/* 3 Dedicated Portal Tabs: Student vs Therapist vs Admin */}
         <div className="flex p-1 bg-surface-sec border border-border-primary rounded-2xl mb-4 text-xs font-bold gap-1 shadow-2xs">
           <button
             type="button"
             onClick={() => { setTab('student'); setError(null); }}
-            className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-2 ${
+            className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
               tab === 'student'
                 ? 'bg-surface-main text-brand-primary shadow-xs border border-border-primary'
                 : 'text-text-secondary hover:text-text-primary'
             }`}
           >
-            <User size={14} />
-            <span>Student / Member</span>
+            <User size={13} />
+            <span>Student</span>
           </button>
 
           <button
             type="button"
-            onClick={() => { setTab('provider'); setError(null); }}
-            className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-2 ${
-              tab === 'provider'
+            onClick={() => { setTab('therapist'); setAccessCode('HAVEN-2026'); setError(null); }}
+            className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
+              tab === 'therapist'
+                ? 'bg-surface-main text-accent-teal shadow-xs border border-border-primary'
+                : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            <Stethoscope size={13} />
+            <span>Therapist</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => { setTab('admin'); setAccessCode('ADMIN-2026'); setError(null); }}
+            className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5 ${
+              tab === 'admin'
                 ? 'bg-surface-main text-brand-primary shadow-xs border border-border-primary'
                 : 'text-text-secondary hover:text-text-primary'
             }`}
           >
-            <ShieldCheck size={14} />
-            <span>Therapist & Admin</span>
+            <ShieldCheck size={13} />
+            <span>Admin</span>
           </button>
         </div>
 
@@ -306,18 +322,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
           {/* Form */}
           <form onSubmit={handleAuthSubmit} className="space-y-3.5">
             
-            {tab === 'provider' ? (
+            {tab !== 'student' ? (
               <>
                 <div className="space-y-1">
                   <label className="text-[9.5px] font-extrabold text-text-secondary uppercase tracking-wider block flex items-center justify-between">
-                    <span>Security Access Code / Key</span>
-                    <span className="text-text-muted font-mono text-[9px]">Admin: ADMIN-2026 • Doc: HAVEN-2026</span>
+                    <span>{tab === 'therapist' ? 'Clinical Key / License Code' : 'Master Admin Security Code'}</span>
+                    <span className="text-text-muted font-mono text-[9px]">{tab === 'therapist' ? 'HAVEN-2026' : 'ADMIN-2026'}</span>
                   </label>
                   <div className="relative">
-                    <KeyRound size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-primary pointer-events-none" />
+                    <KeyRound size={14} className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none ${tab === 'therapist' ? 'text-accent-teal' : 'text-brand-primary'}`} />
                     <input
                       type="text"
-                      placeholder="HAVEN-2026 or ADMIN-2026"
+                      placeholder={tab === 'therapist' ? 'HAVEN-2026' : 'ADMIN-2026'}
                       value={accessCode}
                       onChange={e => { setAccessCode(e.target.value); setError(null); }}
                       className="w-full h-10 pl-9 pr-3 bg-surface-sec border border-border-primary rounded-xl text-xs font-mono font-bold text-text-primary focus:outline-none focus:border-brand-primary transition-colors"
@@ -327,13 +343,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
 
                 <div className="space-y-1">
                   <label className="text-[9.5px] font-extrabold text-text-secondary uppercase tracking-wider block">
-                    Account Email (Optional)
+                    {tab === 'therapist' ? 'Practitioner Email' : 'Admin Email'}
                   </label>
                   <div className="relative">
                     <Mail size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
                     <input
                       type="email"
-                      placeholder="provider@havenmind.org or admin@havenmind.org"
+                      placeholder={tab === 'therapist' ? 'dr.maya@havenwellbeing.in' : 'admin@havenwellbeing.in'}
                       value={email}
                       onChange={e => { setEmail(e.target.value); setError(null); }}
                       className="w-full h-10 pl-9 pr-3 bg-surface-sec border border-border-primary rounded-xl text-xs font-semibold text-text-primary focus:outline-none focus:border-brand-primary transition-colors"
@@ -453,15 +469,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 bg-brand-primary hover:bg-brand-hover disabled:opacity-60 text-white text-xs font-bold rounded-xl cursor-pointer flex items-center justify-center space-x-1.5 shadow-xs transition-all"
+              className={`w-full h-11 text-white text-xs font-bold rounded-xl cursor-pointer flex items-center justify-center space-x-1.5 shadow-xs transition-all ${
+                tab === 'therapist'
+                  ? 'bg-accent-teal hover:bg-accent-teal/90'
+                  : 'bg-brand-primary hover:bg-brand-hover'
+              }`}
             >
               {loading ? (
-                <span>Entering Sanctuary…</span>
+                <span>Entering Portal…</span>
               ) : (
                 <>
                   <span>
-                    {tab === 'provider'
-                      ? 'Sign In (Auto-Detects Admin / Therapist)'
+                    {tab === 'therapist'
+                      ? 'Sign In to Clinical Therapist Portal'
+                      : tab === 'admin'
+                      ? 'Sign In to Executive Admin Console'
                       : mode === 'login'
                       ? 'Sign in as Student'
                       : 'Create Student Account'}
@@ -491,26 +513,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
 
           {/* Dev Bypass Section */}
           <div className="pt-2 border-t border-border-primary/60 space-y-2">
-            {tab === 'provider' ? (
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleDevBypass('admin')}
-                  className="py-2.5 bg-surface-sec hover:bg-surface-main text-text-primary border border-border-primary rounded-xl text-[10.5px] font-bold flex items-center justify-center space-x-1 transition-all cursor-pointer shadow-2xs group"
-                >
-                  <Shield size={12} className="text-accent-amber group-hover:scale-110 transition-transform" />
-                  <span>Dev: Enter Admin</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleDevBypass('therapist')}
-                  className="py-2.5 bg-surface-sec hover:bg-surface-main text-text-primary border border-border-primary rounded-xl text-[10.5px] font-bold flex items-center justify-center space-x-1 transition-all cursor-pointer shadow-2xs group"
-                >
-                  <ShieldCheck size={12} className="text-brand-primary group-hover:scale-110 transition-transform" />
-                  <span>Dev: Enter Therapist</span>
-                </button>
-              </div>
+            {tab === 'therapist' ? (
+              <button
+                type="button"
+                onClick={() => handleDevBypass('therapist')}
+                className="w-full py-2.5 bg-accent-teal-light/40 hover:bg-accent-teal-light/70 text-accent-teal border border-accent-teal/30 rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-2xs group"
+              >
+                <Stethoscope size={13} className="text-accent-teal group-hover:scale-110 transition-transform" />
+                <span>Dev Bypass: Enter Therapist Clinical Portal</span>
+              </button>
+            ) : tab === 'admin' ? (
+              <button
+                type="button"
+                onClick={() => handleDevBypass('admin')}
+                className="w-full py-2.5 bg-surface-sec hover:bg-surface-main text-text-primary border border-border-primary rounded-xl text-xs font-bold flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-2xs group"
+              >
+                <Shield size={13} className="text-accent-amber group-hover:scale-110 transition-transform" />
+                <span>Dev Bypass: Enter Executive Admin Console</span>
+              </button>
             ) : (
               <button
                 type="button"
@@ -523,14 +543,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onAuthenticated }) => {
             )}
 
             {/* Therapist Application Link Callout */}
-            {tab === 'provider' && (
+            {tab === 'therapist' && (
               <div className="pt-2 text-center space-y-1.5">
                 <p className="text-[11px] text-text-secondary font-medium">
                   New practitioner applying to join Haven?
                 </p>
                 <Link
                   to="/apply-therapist"
-                  className="inline-flex items-center justify-center space-x-1.5 w-full py-2.5 bg-brand-light hover:bg-brand-primary hover:text-white text-brand-primary border border-brand-primary/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center space-x-1.5 w-full py-2.5 bg-accent-teal-light/30 hover:bg-accent-teal hover:text-white text-accent-teal border border-accent-teal/20 rounded-xl text-xs font-bold transition-all cursor-pointer"
                 >
                   <span>Apply to Join Provider Network & Sign Contract</span>
                   <ArrowUpRight size={14} />

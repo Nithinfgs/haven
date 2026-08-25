@@ -13,7 +13,8 @@ import {
   Globe, 
   Settings, 
   ChevronDown, 
-  WifiOff 
+  WifiOff,
+  Stethoscope
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { HavenLogo } from './HavenLogo';
@@ -253,12 +254,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </Link>
 
                   <Link
+                    to="/therapist-portal"
+                    onClick={() => setAccountDropdownOpen(false)}
+                    className="flex items-center space-x-2 px-3 py-2 rounded-xl text-accent-teal hover:bg-accent-teal-light/30 transition-colors"
+                  >
+                    <Stethoscope size={14} />
+                    <span>Therapist Clinical Portal</span>
+                  </Link>
+
+                  <Link
                     to="/admin"
                     onClick={() => setAccountDropdownOpen(false)}
                     className="flex items-center space-x-2 px-3 py-2 rounded-xl text-brand-primary hover:bg-brand-light/40 transition-colors"
                   >
                     <Shield size={14} />
-                    <span>Executive Admin Portal</span>
+                    <span>Executive Admin Console</span>
                   </Link>
 
                   <div className="pt-1 border-t border-border-primary/60">
